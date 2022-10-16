@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
+     integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
+     crossorigin=""/>
+     <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
+     integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg="
+     crossorigin=""></script>
+    <style>
+        #map {
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Where is the ISS?</h1>
+    <p>
+        latitude : <span id="lat"></span> </br>
+        longitude : <span id="lon"></span>
+    </p>
+    <div id="map">
+        
+    </div>
+    <script>
+        const map = L.map('map').setView([0, 0], 1);
+        const imgUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/International_Space_Station.svg/320px-International_Space_Station.svg.png";
+        const Icon = L.icon({
+            iconUrl: imgUrl,
+            iconSize: [50, 32],
+            iconAnchor: [25, 16]
+        });
+        marker = L.marker([0, 0], {icon: Icon}).addTo(map);
+        const mapUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const attribution = '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        L.tileLayer(mapUrl, { attribution }).addTo(map);
+
+        const path = "https://api.wheretheiss.at/v1/satellites/25544";
+
+        let turn = 0;
+        async function getISSData() {
+            const response = await fetch(path);
+            const data = await response.json();
+            const {latitude, longitude, id} = data;
+            document.getElementById("lat").textContent = latitude.toFixed(2);
+            document.getElementById("lon").textContent = longitude.toFixed(2);
+            marker.setLatLng([latitude, longitude]);
+            if (turn === 0) {
+                map.setView([latitude, longitude], 2);
+                turn++;
+            }
+        }
+        getISSData();
+
+        setInterval(getISSData, 1000);
+    </script>
+</body>
+</html>
